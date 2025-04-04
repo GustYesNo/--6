@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบประเมินความเสี่ยงข้อเข่าเสื่อม</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header img {
+            width: 80px;
+            display: block;
+            margin: 0 auto;
+        }
+        .header h3 {
+            margin: 10px 0 0;
+            font-size: 1.2em;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-group input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            display: block;
+            margin: auto;
+        }
+        .question {
+            margin-bottom: 15px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-option {
+            flex: 1;
+            min-width: 100px;
+            padding: 10px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: white;
+            border: 1px solid #ccc;
+            transition: all 0.3s ease-in-out;
+        }
+        .btn-option.selected {
+            background-color: #A5D6A7;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .result {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- โลโก้และชื่อศูนย์ -->
+        <div class="header">
+            <img src="logo.png" alt="Logo">
+            <h3>ศูนย์บริการสาธารณสุขที่ 8 บางเขน</h3>
+        </div>
+
+        <h1>แบบประเมินความเสี่ยงข้อเข่าเสื่อม</h1>
+
+        <!-- ข้อมูลส่วนตัว -->
+        <div class="input-group">
+            <label for="name">ชื่อ-นามสกุล:</label>
+            <input type="text" id="name" placeholder="กรุณากรอกชื่อ-นามสกุล">
+        </div>
+
+        <div class="input-group">
+            <label for="phone">เบอร์โทรติดต่อ:</label>
+            <input type="text" id="phone" placeholder="กรุณากรอกเบอร์โทร">
+        </div>
+
+        <!-- คำถาม -->
+        <div id="questions"></div>
+
+        <button onclick="calculateRisk()">คำนวณความเสี่ยง</button>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        let questionsData = [
+        { text: "คุณอายุเท่าไหร่?", options: ["ต่ำกว่า 40", "40 ปีขึ้นไป"], scores: [1, 2], key: "age" },
+        { text: "คุณเป็นผู้หญิงหรือผู้ชาย?", options: ["ผู้หญิง", "ผู้ชาย"], scores: [2, 1], key: "gender" },
+        { text: "น้ำหนักของคุณเท่าไหร่?", options: ["< 50 กก.", "50-70 กก.", "> 70 กก."], scores: [1, 2, 3], key: "weight" },
+        { text: "คุณออกกำลังกายบ่อยแค่ไหน?", options: ["บ่อย", "บางครั้ง", "ไม่เคย"], scores: [1, 2, 3], key: "exercise" },
+        { text: "คุณเคยมีอุบัติเหตุที่เข่าหรือไม่?", options: ["ใช่", "ไม่"], scores: [3, 1], key: "injury" },
+        { text: "คุณเคยได้ยินเสียง ลั่น หรือ กรอบแกรบ ในข้อเข่าเวลาขยับหรือไม่?", options: ["ใช่", "ไม่"], scores: [3, 1], key: "sound" },
+        { text: "คุณต้องยืนหรือเดินเป็นเวลานานหรือไม่?", options: ["ใช่", "ไม่"], scores: [3, 1], key: "standing" },
+        { text: "คุณมีอาการปวดเข่าหรือไม่?", options: ["ใช่", "ไม่"], scores: [3, 1], key: "knee_pain" },
+        { text: "คุณรู้สึกว่าข้อเข่าของคุณอุ่นหรือร้อนกว่าปกติหรือไม่?", options: ["ใช่", "ไม่"], scores: [3, 1], key: "warm_knee" }
+    ];
+
+    let answers = {};
+    let answerTexts = {}; // เก็บตัวเลือกข้อความ
+
+    function createQuestions() {
+        let questionsContainer = document.getElementById('questions');
+        questionsData.forEach((q, index) => {
+            let questionDiv = document.createElement('div');
+            questionDiv.classList.add('question');
+            questionDiv.innerHTML = `<p>${index + 1}. ${q.text}</p>`;
+
+            let btnGroup = document.createElement('div');
+            btnGroup.classList.add('btn-group');
+
+            q.options.forEach((option, idx) => {
+                let btn = document.createElement('div');
+                btn.classList.add('btn-option');
+                btn.innerText = option;
+                btn.onclick = function() {
+                    selectAnswer(btn, q.key, option, q.scores[idx]); // เก็บทั้งข้อความและคะแนน
+                };
+                btnGroup.appendChild(btn);
+            });
+
+            questionDiv.appendChild(btnGroup);
+            questionsContainer.appendChild(questionDiv);
+        });
+    }
+
+    function selectAnswer(element, question, text, score) {
+        let siblings = element.parentElement.children;
+        for (let btn of siblings) {
+            btn.classList.remove('selected');
+        }
+        element.classList.add('selected');
+        answers[question] = score; // เก็บค่าคะแนน
+        answerTexts[question] = text; // เก็บข้อความที่เลือก
+    }
+
+    function calculateRisk() {
+        let totalScore = Object.values(answers).reduce((a, b) => a + b, 0);
+        let riskLevel = totalScore <= 14 ? "ความเสี่ยงน้อย" :
+                totalScore <= 19 ? "ความเสี่ยงปานกลาง" :
+                totalScore <= 24 ? "ความเสี่ยงสูง" : "ความเสี่ยงสูงมาก";
+
+        let recommendationText = riskLevel === "ความเสี่ยงน้อย" ? "ดูแลสุขภาพข้อเข่าต่อไป" :
+                                 riskLevel === "ความเสี่ยงปานกลาง" ? "ควรเฝ้าระวัง ลดน้ำหนักและออกกำลังกาย" :
+                                 riskLevel === "ความเสี่ยงสูง" ? "แนะนำให้พบแพทย์เพื่อดูแลข้อเข่า ติดต่อศูนย์บริการที่ 8 บางเขน 02-526-4758" :
+                                 "รีบพบแพทย์โดยด่วน ติดต่อศูนย์บริการที่ 8 บางเขน 02-526-4758";
+
+        // แสดงผลโดยไม่รวมช้อยส์คำตอบ
+        document.getElementById('result').innerHTML = `
+            <p>คะแนนรวม: ${totalScore}</p>
+            <p>ระดับความเสี่ยง: ${riskLevel}</p>
+            <p>${recommendationText}</p>
+        `;
+
+        sendToGoogleSheet(totalScore, riskLevel, recommendationText);
+    }
+
+    function sendToGoogleSheet(totalScore, riskLevel, recommendationText) {
+        let name = document.getElementById('name').value;
+        let phone = document.getElementById('phone').value;
+
+        fetch("https://script.google.com/macros/s/AKfycbxEFekHrXex8-SG7p6nFTzovCQox05fsyjPwddXSI1LqhohOfWnrI4d5PkO9FvFDTrI/exec", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name, 
+                phone, 
+                ...answerTexts, // บันทึกตัวเลือกที่เป็นข้อความ
+                totalScore, 
+                riskLevel, 
+                recommendation: recommendationText
+            }),
+            mode: "no-cors"
+        })
+        .then(() => console.log("Data sent successfully"))
+        .catch(error => console.error("Error:", error));
+    }
+
+    createQuestions();
+</script>
+
+</body>
+</html>
