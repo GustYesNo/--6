@@ -134,7 +134,10 @@
         { text: "คุณเคยได้ยินเสียง ลั่น หรือ กรอบแกรบ ในข้อเข่าเวลาขยับหรือไม่?", options: ["ใช่", "ไม่"], scores: [3, 1], key: "sound" },
         { text: "คุณต้องยืนหรือเดินเป็นเวลานานหรือไม่?", options: ["ใช่", "ไม่"], scores: [3, 1], key: "standing" },
         { text: "คุณมีอาการปวดเข่าหรือไม่?", options: ["ใช่", "ไม่"], scores: [3, 1], key: "knee_pain" },
-        { text: "คุณรู้สึกว่าข้อเข่าของคุณอุ่นหรือร้อนกว่าปกติหรือไม่?", options: ["ใช่", "ไม่"], scores: [3, 1], key: "warm_knee" }
+        { text: "คุณรู้สึกว่าข้อเข่าของคุณอุ่นหรือร้อนกว่าปกติหรือไม่?", options: ["ใช่", "ไม่"], scores: [3, 1], key: "warm_knee" },
+        { text: "คุณมีอาการข้อเข่าฝืดหรือตึงหลังตื่นนอนตอนเช้าหรือไม่?", options: ["ใช่", "ไม่"], scores: [3, 1], key: "morning_stiffness" },
+        { text: "เมื่อกดบริเวณข้อเข่า คุณรู้สึกเจ็บหรือไม่?", options: ["ใช่", "ไม่"], scores: [3, 1], key: "bone_tenderness" },
+        { text: "ข้อเข่าของคุณมีลักษณะบวมใหญ่หรือผิดรูปหรือไม่?", options: ["ใช่", "ไม่"], scores: [3, 1], key: "joint_deformity" }
     ];
 
     let answers = {};
@@ -177,9 +180,9 @@
 
     function calculateRisk() {
         let totalScore = Object.values(answers).reduce((a, b) => a + b, 0);
-        let riskLevel = totalScore <= 14 ? "ความเสี่ยงน้อย" :
-                totalScore <= 19 ? "ความเสี่ยงปานกลาง" :
-                totalScore <= 24 ? "ความเสี่ยงสูง" : "ความเสี่ยงสูงมาก";
+        let riskLevel = totalScore <= 16 ? "ความเสี่ยงน้อย" :
+                totalScore <= 21 ? "ความเสี่ยงปานกลาง" :
+                totalScore <= 26 ? "ความเสี่ยงสูง" : "ความเสี่ยงสูงมาก";
 
         let recommendationText = riskLevel === "ความเสี่ยงน้อย" ? "ดูแลสุขภาพข้อเข่าต่อไป" :
                                  riskLevel === "ความเสี่ยงปานกลาง" ? "ควรเฝ้าระวัง ลดน้ำหนักและออกกำลังกาย" :
@@ -200,7 +203,7 @@
         let name = document.getElementById('name').value;
         let phone = document.getElementById('phone').value;
 
-        fetch("https://script.google.com/macros/s/AKfycbxEFekHrXex8-SG7p6nFTzovCQox05fsyjPwddXSI1LqhohOfWnrI4d5PkO9FvFDTrI/exec", {
+        fetch("https://script.google.com/macros/s/AKfycbyyNHjQxLtNVPrq65ryf-JSGH2rKDenCvUIeh-VY5qTpEM7DHFve20WTIdzv8aNWyH9/exec", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
